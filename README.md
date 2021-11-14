@@ -1,5 +1,5 @@
 # YouTubeVideoDumper (PHP)
-Using: Run.php?id=(YoutubeVideoID)
+Using: Dumper.php?id=(YoutubeVideoID)
 * Title
 * View Count
 * Date
@@ -11,5 +11,5 @@ Using: Run.php?id=(YoutubeVideoID)
 * Author Avatar
 * Author Subscriber Count
 
-Last Update: 25.01.2021
-![Screenshot](https://raw.githubusercontent.com/inc-Majdev/YouTubeVideoDumper/main/Image/Screenshot.jpg)
+Last Update: 14.11.2021
+![Screenshot](https://i.imgur.com/XnL8ITR.jpg)

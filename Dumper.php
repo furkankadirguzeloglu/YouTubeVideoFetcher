@@ -68,10 +68,10 @@ $AuthorAvatar = htmlspecialchars_decode($AuthorAvatarTemp2[0]);
 }
 
 $AuthorSubscriberCount = "null";
-if(strpos($DownloadHTML, '"subscriberCountText":{"runs":[{"text":') == true){
-$AuthorSubscriberCountTemp1 = substr($DownloadHTML, (strpos($DownloadHTML, '"subscriberCountText":{"runs":[{"text":')), 200);
+if(strpos($DownloadHTML, 'subscriberCountText":{"accessibility":{"accessibilityData":{"label":"') == true){
+$AuthorSubscriberCountTemp1 = substr($DownloadHTML, (strpos($DownloadHTML, 'subscriberCountText":{"accessibility":{"accessibilityData":{"label":"')), 200);
 $AuthorSubscriberCountTemp2 = explode('},"', $AuthorSubscriberCountTemp1);
-$AuthorSubscriberCountTemp3 = str_replace('"subscriberCountText":{"runs":[{"text":"', '', str_replace('"}]','',str_replace(' subscribers', '',$AuthorSubscriberCountTemp2[0])));
+$AuthorSubscriberCountTemp3 = str_replace('subscriberCountText":{"accessibility":{"accessibilityData":{"label":"', '', str_replace('"}','',str_replace(' subscribers', '',$AuthorSubscriberCountTemp2[0])));
 $AuthorSubscriberCount = htmlspecialchars_decode($AuthorSubscriberCountTemp3);
 }
 
