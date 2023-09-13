@@ -1,102 +1,72 @@
 <?php
-function VideoDumper($id){
-$Opts = array(
-'http'=>array(
-'method'=>"GET",
-'header'=>"Accept-language: en\r\n"
-));
-
-$Context = stream_context_create($Opts);
-$DownloadHTML = file_get_contents("https://youtube.com/watch?v=$id", false, $Context);
-
-$Title = "null";
-if(strpos($DownloadHTML, '<title>') == true && strpos($DownloadHTML, '</title>') == true){
-$TitleTemp1 = substr($DownloadHTML, (strpos($DownloadHTML, "<title>") + 7), 220);
-$TitleTemp2 = substr($TitleTemp1, 0, strpos($TitleTemp1, "</title>") - 9);
-$Title = htmlspecialchars_decode($TitleTemp2);
+function VideoDumper($id) {
+    $opts = array('http' => array('method' => "GET", 'header' => "Accept-language: en\r\n"));
+    $context = stream_context_create($opts);
+    $downloadHTML = file_get_contents("https://youtube.com/watch?v=$id", false, $context);
+    $title = "null";
+    if (strpos($downloadHTML, '<title>') !== false && strpos($downloadHTML, '</title>') !== false) {
+        $titleTemp1 = substr($downloadHTML, strpos($downloadHTML, "<title>") + 7, 220);
+        $titleTemp2 = substr($titleTemp1, 0, strpos($titleTemp1, "</title>") - 9);
+        $title = htmlspecialchars_decode($titleTemp2);
+    }
+    $viewCount = "null";
+    if (strpos($downloadHTML, '"shortViewCount":{"simpleText":"') !== false) {
+        $viewCountTemp1 = substr($downloadHTML, strpos($downloadHTML, '"shortViewCount":{"simpleText":"'), 200);
+        $viewCountTemp2 = explode(',"', $viewCountTemp1);
+        $viewCount = htmlspecialchars_decode(str_replace('"shortViewCount":{"simpleText":"', '', str_replace(' views"}', '', $viewCountTemp2[0])));
+    }
+    $date = "null";
+    if (strpos($downloadHTML, 'dateText') !== false) {
+        $dateTemp1 = substr($downloadHTML, strpos($downloadHTML, 'dateText'), 200);
+        $dateTemp2 = explode('"},"', $dateTemp1);
+        $date = htmlspecialchars_decode(str_replace('dateText":{"simpleText":"', '', $dateTemp2[0]));
+    }
+    $like = "null";
+    if (strpos($downloadHTML, '{"iconType":"LIKE"},"defaultText":{"accessibility":{"accessibilityData":{') !== false) {
+        $likeTemp1 = substr($downloadHTML, strpos($downloadHTML, '{"iconType":"LIKE"},"defaultText":{"accessibility":{"accessibilityData":{'), 200);
+        $likeTemp2 = explode(',"', $likeTemp1);
+        $like = htmlspecialchars_decode(str_replace('simpleText":"', '', str_replace('"}', '', $likeTemp2[2])));
+    }
+    $dislike = "null";
+    if (strpos($downloadHTML, '{"iconType":"DISLIKE"},"defaultText":{"accessibility":{"accessibilityData":{') !== false) {
+        $dislikeTemp1 = substr($downloadHTML, strpos($downloadHTML, '{"iconType":"DISLIKE"},"defaultText":{"accessibility":{"accessibilityData":{'), 200);
+        $dislikeTemp2 = explode(',"', $dislikeTemp1);
+        $dislike = htmlspecialchars_decode(str_replace('simpleText":"', '', str_replace('"}', '', $dislikeTemp2[2])));
+    }
+    $description = "null";
+    if (strpos($downloadHTML, '"description":{"simpleText":"') !== false) {
+        $descriptionTemp1 = substr($downloadHTML, strpos($downloadHTML, '"description":{"simpleText":"'), 99999);
+        $descriptionTemp2 = explode('"},"', $descriptionTemp1);
+        $description = htmlspecialchars_decode(str_replace('"description":{"simpleText":"', '', $descriptionTemp2[0]));
+    }
+    $thumbnail = "https://img.youtube.com/vi/$id/sddefault.jpg";
+    $author = "null";
+    if (strpos($downloadHTML, 'viewCount') !== false) {
+        $authorTemp1 = substr($downloadHTML, strpos($downloadHTML, "viewCount"), 200);
+        $authorTemp2 = explode('","', $authorTemp1);
+        $author = htmlspecialchars_decode(str_replace('author":"', '', $authorTemp2[1]));
+    }
+    $authorAvatar = "null";
+    if (strpos($downloadHTML, ',"width":88,"height":88},{"url":"') !== false) {
+        $authorAvatarTemp1 = substr($downloadHTML, strpos($downloadHTML, ',"width":88,"height":88},{"url":"'), 200);
+        $authorAvatarTemp2 = explode('"https://yt3.ggpht.com/ytc/', $authorAvatarTemp1);
+        $authorAvatarTemp3 = explode('","', $authorAvatarTemp2[1]);
+        $authorAvatar = htmlspecialchars_decode("https://yt3.ggpht.com/ytc/" . str_replace('', '', $authorAvatarTemp3[0]));
+    }
+    $authorSubscriberCount = "null";
+    if (strpos($downloadHTML, 'subscriberCountText":{"accessibility":{"accessibilityData":{"label":"') !== false) {
+        $authorSubscriberCountTemp1 = substr($downloadHTML, strpos($downloadHTML, 'subscriberCountText":{"accessibility":{"accessibilityData":{"label":"'), 200);
+        $authorSubscriberCountTemp2 = explode('},"', $authorSubscriberCountTemp1);
+        $authorSubscriberCountTemp3 = str_replace('subscriberCountText":{"accessibility":{"accessibilityData":{"label":"', '', str_replace('"}', '', str_replace(' subscribers', '', $authorSubscriberCountTemp2[0])));
+        $authorSubscriberCount = htmlspecialchars_decode($authorSubscriberCountTemp3);
+    }
+    $data = ['title' => $title, 'viewcount' => $viewCount, 'date' => $date, 'like' => $like, 'dislike' => $dislike, 'description' => $description, 'thumbnail' => $thumbnail, 'author' => $author, 'author_avatar' => $authorAvatar, 'author_subscriber_count' => $authorSubscriberCount];
+    return $data;
 }
-
-$ViewCount = "null";
-if(strpos($DownloadHTML, '"shortViewCount":{"simpleText":"') == true){
-$ViewCountTemp1 = substr($DownloadHTML, (strpos($DownloadHTML, '"shortViewCount":{"simpleText":"')), 200);
-$ViewCountTemp2 = explode(',"', $ViewCountTemp1);
-$ViewCount = htmlspecialchars_decode(str_replace('"shortViewCount":{"simpleText":"','', str_replace(' views"}}}', '', $ViewCountTemp2[0])));
+function ArrayDumper($data) {
+    echo (php_sapi_name() !== 'cli') ? '<pre>' : '';
+    echo preg_replace('#\n{2,}#', "\n", print_r($data, true));
+    echo (php_sapi_name() !== 'cli') ? '</pre>' : '';
 }
-
-$Date = "null";
-if(strpos($DownloadHTML, 'dateText') == true){
-$DateTemp1 = substr($DownloadHTML, (strpos($DownloadHTML, 'dateText')), 200);
-$DateTemp2 = explode('"}}},{"', $DateTemp1);
-$Date = htmlspecialchars_decode(str_replace('dateText":{"simpleText":"','', $DateTemp2[0]));
-}
-
-$Like = "null";
-if(strpos($DownloadHTML, '{"iconType":"LIKE"},"defaultText":{"accessibility":{"accessibilityData":{') == true){
-$LikeTemp1 = substr($DownloadHTML, (strpos($DownloadHTML, '{"iconType":"LIKE"},"defaultText":{"accessibility":{"accessibilityData":{')), 200);
-$LikeTemp2 = explode(',"', $LikeTemp1);
-$Like = htmlspecialchars_decode(str_replace('simpleText":"','', str_replace('"}', '', $LikeTemp2[2])));
-}
-
-$Dislike = "null";
-if(strpos($DownloadHTML, '{"iconType":"DISLIKE"},"defaultText":{"accessibility":{"accessibilityData":{') == true){
-$DislikeTemp1 = substr($DownloadHTML, (strpos($DownloadHTML, '{"iconType":"DISLIKE"},"defaultText":{"accessibility":{"accessibilityData":{')), 200);
-$DislikeTemp2 = explode(',"', $DislikeTemp1);
-$Dislike = htmlspecialchars_decode(str_replace('simpleText":"','', str_replace('"}', '', $DislikeTemp2[2])));
-}
-
-$Description = "null";
-if(strpos($DownloadHTML, '"description":{"simpleText":"') == true){
-$DescriptionTemp1 = substr($DownloadHTML, (strpos($DownloadHTML, '"description":{"simpleText":"')), 99999);
-$DescriptionTemp2 = explode('"},"', $DescriptionTemp1);
-$Description = htmlspecialchars_decode(str_replace('"description":{"simpleText":"', '', $DescriptionTemp2[0]));
-}
-
-$Thumbnail = "https://img.youtube.com/vi/$id/sddefault.jpg";
-
-$Author = "null";
-if(strpos($DownloadHTML, 'viewCount') == true){
-$AuthorTemp1 = substr($DownloadHTML, (strpos($DownloadHTML, "viewCount")), 200);
-$AuthorTemp2 = explode('","', $AuthorTemp1);
-$Author = htmlspecialchars_decode(str_replace('author":"','', $AuthorTemp2[1]));
-}
-
-$AuthorAvatar = "null";
-if(strpos($DownloadHTML, 'https://yt3.ggpht.com/ytc/') == true){
-$AuthorAvatarTemp1 = substr($DownloadHTML, (strpos($DownloadHTML, "https://yt3.ggpht.com/ytc/")), 200);
-$AuthorAvatarTemp2 = explode('","', $AuthorAvatarTemp1);
-$AuthorAvatar = htmlspecialchars_decode($AuthorAvatarTemp2[0]);
-}
-
-$AuthorSubscriberCount = "null";
-if(strpos($DownloadHTML, 'subscriberCountText":{"accessibility":{"accessibilityData":{"label":"') == true){
-$AuthorSubscriberCountTemp1 = substr($DownloadHTML, (strpos($DownloadHTML, 'subscriberCountText":{"accessibility":{"accessibilityData":{"label":"')), 200);
-$AuthorSubscriberCountTemp2 = explode('},"', $AuthorSubscriberCountTemp1);
-$AuthorSubscriberCountTemp3 = str_replace('subscriberCountText":{"accessibility":{"accessibilityData":{"label":"', '', str_replace('"}','',str_replace(' subscribers', '',$AuthorSubscriberCountTemp2[0])));
-$AuthorSubscriberCount = htmlspecialchars_decode($AuthorSubscriberCountTemp3);
-}
-
-$Data = [
-'title'=>$Title,
-'viewcount'=>$ViewCount,
-'date'=>$Date,
-'like'=>$Like,
-'dislike'=>$Dislike,
-'description'=>$Description,
-'thumbnail'=>$Thumbnail,
-'author'=>$Author,
-'author_avatar'=>$AuthorAvatar,
-'author_subscriber_count'=>$AuthorSubscriberCount
-];
-return $Data;
-}
-
-function ArrayDumper(){
-echo (php_sapi_name() !== 'cli') ? '<pre>' : '';
-foreach(func_get_args() as $arg){
-echo preg_replace('#\n{2,}#', "\n", print_r($arg, true));
-}
-echo (php_sapi_name() !== 'cli') ? '</pre>' : '';
-}
-
 ArrayDumper(VideoDumper($_GET["id"]));
 ?>
