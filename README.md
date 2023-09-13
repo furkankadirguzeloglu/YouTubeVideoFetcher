@@ -11,5 +11,5 @@ Using: Dumper.php?id=(YoutubeVideoID)
 * Author Avatar
 * Author Subscriber Count
 
-Last Update: 14.11.2021
+Last Update: 13.09.2023
 ![Screenshot](https://i.imgur.com/XnL8ITR.jpg)
