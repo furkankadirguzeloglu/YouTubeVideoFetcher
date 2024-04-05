@@ -2,6 +2,9 @@
 
 YouTube Video Fetcher is a project that enables you to obtain basic information about YouTube videos without the need for an API key, using PHP and Curl.
 
+Last Update: 04/2024
+![Screenshot](https://i.imgur.com/XPLNlHJ.png)
+
 ## Usage 
 ```php
 <?php
